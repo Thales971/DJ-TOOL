@@ -3,6 +3,40 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Y2K NEON THEME */
+@import url('https://fonts.googleapis.com/css2?family=Bungee:wght@400;700&family=Righteous&display=swap');
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor); }
+  50% { filter: drop-shadow(0 0 16px currentColor) drop-shadow(0 0 32px currentColor); }
+}
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #ff00ff, 0 0 70px #ff00ff; }
+  20%, 24%, 55% { text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff; }
+}
+
+@keyframes pad-activate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -43,6 +77,61 @@
 }
 
 :root {
+  /* Y2K Neon Colors */
+  --neon-cyan: #00ffff;
+  --neon-magenta: #ff00ff;
+  --neon-pink: #ff1493;
+  --neon-yellow: #ffff00;
+  --neon-lime: #39ff14;
+  --neon-red: #ff0033;
+  --neon-orange: #ff6600;
+  --neon-blue: #0088ff;
+  --neon-purple: #bf00ff;
+  --neon-teal: #00cccc;
+  --neon-gold: #cccc00;
+  --neon-hot-pink: #ff69b4;
+  --neon-dark-red: #cc0022;
+  --neon-bright-cyan: #44dddd;
+  --neon-bright-yellow: #dddd22;
+  
+  /* Dark Y2K Background */
+  --bg-dark: #0a0a1a;
+  --bg-darker: #050510;
+  --bg-purple: #1a0a2e;
+  
+  --primary: var(--color-blue-700);
+  --primary-foreground: var(--color-blue-50);
+  --sidebar-primary: var(--color-blue-600);
+  --sidebar-primary-foreground: var(--color-blue-50);
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  --radius: 0.65rem;
+  --background: var(--bg-dark);
+  --foreground: #e0e0ff;
+  --card: var(--bg-darker);
+  --card-foreground: #e0e0ff;
+  --popover: var(--bg-darker);
+  --popover-foreground: #e0e0ff;
+  --secondary: oklch(0.98 0.001 286.375);
+  --secondary-foreground: oklch(0.4 0.015 65);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: var(--neon-cyan);
+  --accent-foreground: var(--bg-dark);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: #2a2a4a;
+  --input: #1a1a3a;
+  --ring: var(--neon-magenta);
+  --sidebar: var(--bg-darker);
+  --sidebar-foreground: #e0e0ff;
+  --sidebar-accent: var(--neon-cyan);
+  --sidebar-accent-foreground: var(--bg-dark);
+  --sidebar-border: #2a2a4a;
+  --sidebar-ring: var(--neon-magenta);
   --primary: var(--color-blue-700);
   --primary-foreground: var(--color-blue-50);
   --sidebar-primary: var(--color-blue-600);
@@ -117,8 +206,29 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-purple) 50%, var(--bg-dark) 100%);
+    font-family: 'Righteous', sans-serif;
+  }
+  
+  /* Scanlines effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+    z-index: 9999;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -131,27 +241,145 @@
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
   }
+  
+  /* Y2K Neon Title */
+  .neon-title {
+    font-family: 'Bungee', Impact, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-yellow), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neon-flicker 3s infinite;
+    text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-magenta);
+  }
+  
+  /* Neon Glow Effect */
+  .glow-neon {
+    animation: glow-pulse 1.5s ease-in-out infinite;
+  }
+  
+  /* Vinyl Spin */
+  .vinyl-spin {
+    animation: vinyl-spin 8s linear infinite;
+  }
+  
+  /* Pad Activation */
+  .pad-active {
+    animation: pad-activate 0.3s ease-out;
+  }
+  
+  /* Slide Up */
+  .slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
+  /* Y2K Neon Button */
+  .btn-neon {
+    @apply relative px-6 py-3 font-bold text-lg uppercase tracking-wider rounded-lg;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 20px currentColor;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-neon:hover {
+    @apply scale-110;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 40px currentColor;
+  }
+  
+  .btn-neon:active {
+    @apply scale-95;
+  }
+  
+  /* Y2K Neon Pad */
+  .pad-neon {
+    @apply relative w-full aspect-square rounded-lg font-bold text-center flex items-center justify-center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 0 20px currentColor;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  }
+  
+  .pad-neon:hover {
+    @apply scale-105;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), 0 0 40px currentColor;
+  }
+  
+  .pad-neon:active {
+    @apply scale-95;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 0 10px currentColor;
+  }
+  
+  /* Y2K Neon Container */
+  .neon-container {
+    @apply rounded-xl p-6 backdrop-blur-md;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.15), 0 0 80px rgba(255, 0, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Waveform Container */
+  .waveform-container {
+    @apply rounded-lg overflow-hidden;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 0, 255, 0.05));
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Slider Y2K */
+  input[type="range"] {
+    @apply w-full h-2 rounded-lg appearance-none cursor-pointer;
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-6 h-6 rounded-full cursor-pointer;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    box-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-magenta);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    @apply w-6 h-6 rounded-full cursor-pointer;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+    box-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-magenta);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Enhanced text shadows for neon effect */
+  h1, h2, h3 {
+    text-shadow: 0 0 10px currentColor;
+  }
+  
+  /* Responsive text sizing */
+  @media (max-width: 640px) {
+    .neon-title {
+      font-size: 2rem;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .neon-title {
+      font-size: 3.5rem;
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    .neon-title {
+      font-size: 5rem;
+    }
+  }
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,16 +390,16 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
   }
 }
