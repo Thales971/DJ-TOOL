@@ -1,29 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import * as Tone from 'tone';
-import Pad from '@/components/Pad';
-import Mixer from '@/components/Mixer';
-import Deck from '@/components/Deck';
-import RemixPanel from '@/components/RemixPanel';
-
-/* ===== INITIAL SOUNDS ===== */
-const INITIAL_SOUNDS = [
-  { id: 1, name: 'DOG BARK!', url: 'https://www.myinstants.com/media/sounds/minecraft-dog-bark.mp3', color: '#ff00ff', glow: '#ff00ff' },
-  { id: 2, name: 'BOOM!', url: 'https://www.myinstants.com/media/sounds/tnt-explosion.mp3', color: '#ff0033', glow: '#ff0033' },
-  { id: 3, name: 'SPLASH!', url: 'https://www.myinstants.com/media/sounds/minecraft-water-splash-sound-effect.mp3', color: '#00ffff', glow: '#00ffff' },
-  { id: 4, name: 'CRUNCH!', url: 'https://www.orangefreesounds.com/wp-content/uploads/2017/12/Snow-crunch-sound.mp3', color: '#ffff00', glow: '#ffff00' },
-  { id: 5, name: 'WOOF!', url: 'https://www.myinstants.com/media/sounds/minecraft-dog-bark.mp3', color: '#39ff14', glow: '#39ff14' },
-  { id: 6, name: 'TNT!', url: 'https://www.myinstants.com/media/sounds/tnt-explosion.mp3', color: '#ff6600', glow: '#ff6600' },
-  { id: 7, name: 'WATER!', url: 'https://www.myinstants.com/media/sounds/minecraft-water-splash-sound-effect.mp3', color: '#0088ff', glow: '#0088ff' },
-  { id: 8, name: 'SNOW!', url: 'https://www.orangefreesounds.com/wp-content/uploads/2017/12/Snow-crunch-sound.mp3', color: '#bf00ff', glow: '#bf00ff' },
-  { id: 9, name: 'BARK 2!', url: 'https://www.myinstants.com/media/sounds/minecraft-dog-bark.mp3', color: '#ff1493', glow: '#ff1493' },
-  { id: 10, name: 'EXPLODE!', url: 'https://www.myinstants.com/media/sounds/tnt-explosion.mp3', color: '#ff4444', glow: '#ff4444' },
-  { id: 11, name: 'DRIP!', url: 'https://www.myinstants.com/media/sounds/minecraft-water-splash-sound-effect.mp3', color: '#00cccc', glow: '#00cccc' },
-  { id: 12, name: 'CRACKLE!', url: 'https://www.orangefreesounds.com/wp-content/uploads/2017/12/Snow-crunch-sound.mp3', color: '#cccc00', glow: '#cccc00' },
-  { id: 13, name: 'HOWL!', url: 'https://www.myinstants.com/media/sounds/minecraft-dog-bark.mp3', color: '#ff69b4', glow: '#ff69b4' },
-  { id: 14, name: 'KABOOM!', url: 'https://www.myinstants.com/media/sounds/tnt-explosion.mp3', color: '#cc0022', glow: '#cc0022' },
-  { id: 15, name: 'WAVE!', url: 'https://www.myinstants.com/media/sounds/minecraft-water-splash-sound-effect.mp3', color: '#44dddd', glow: '#44dddd' },
-  { id: 16, name: 'STEP!', url: 'https://www.orangefreesounds.com/wp-content/uploads/2017/12/Snow-crunch-sound.mp3', color: '#dddd22', glow: '#dddd22' },
-];
+import AutoBeatMaker from "@/components/AutoBeatMaker";
+import Deck from "@/components/Deck";
+import Mixer from "@/components/Mixer";
+import Pad from "@/components/Pad";
+import RemixPanel from "@/components/RemixPanel";
+import { minecraftSounds } from "@/const";
+import { useCallback, useEffect, useRef, useState } from "react";
+import * as Tone from "tone";
 
 interface Sound {
   id: string | number;
@@ -42,9 +24,15 @@ interface SoundSettings {
   volume: number;
 }
 
+const INITIAL_SOUNDS: Sound[] = minecraftSounds.map((sound, index) => ({
+  id: index + 1,
+  ...sound,
+  glow: sound.color,
+}));
+
 /**
  * ONOMATOPEIA DJ 2000 - Main App
- * 
+ *
  * Design Philosophy: Y2K Cyberpunk Maximalist
  * - Neon saturation with intense glows
  * - Digital maximalism with multiple effect layers
@@ -63,10 +51,19 @@ export default function Home() {
   const [isAudioStarted, setIsAudioStarted] = useState(false);
 
   /* Per-sound FX settings */
-  const [soundSettings, setSoundSettings] = useState<Record<string | number, SoundSettings>>(() => {
+  const [soundSettings, setSoundSettings] = useState<
+    Record<string | number, SoundSettings>
+  >(() => {
     const settings: Record<string | number, SoundSettings> = {};
-    INITIAL_SOUNDS.forEach((s) => {
-      settings[s.id] = { pitch: 0, speed: 1, reverb: 0, delay: 0, loop: false, volume: 100 };
+    INITIAL_SOUNDS.forEach(s => {
+      settings[s.id] = {
+        pitch: 0,
+        speed: 1,
+        reverb: 0,
+        delay: 0,
+        loop: false,
+        volume: 100,
+      };
     });
     return settings;
   });
@@ -107,7 +104,7 @@ export default function Home() {
       if (!fxChainsRef.current[sound.id]) {
         const reverb = new Tone.Reverb({ decay: 2, wet: settings.reverb });
         const delay = new Tone.FeedbackDelay({
-          delayTime: '8n',
+          delayTime: "8n",
           feedback: 0.3,
           wet: settings.delay,
         });
@@ -133,7 +130,10 @@ export default function Home() {
         playersRef.current[sound.id] = player;
       }
 
-      return { player: playersRef.current[sound.id], fx: fxChainsRef.current[sound.id] };
+      return {
+        player: playersRef.current[sound.id],
+        fx: fxChainsRef.current[sound.id],
+      };
     },
     [soundSettings]
   );
@@ -176,39 +176,53 @@ export default function Home() {
   );
 
   /* Handle file upload */
-  const handleUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    const neonColors = [
-      '#ff00ff',
-      '#00ffff',
-      '#ffff00',
-      '#39ff14',
-      '#ff6600',
-      '#0088ff',
-      '#bf00ff',
-      '#ff1493',
-    ];
-    const color = neonColors[Math.floor(Math.random() * neonColors.length)];
-    const newSound: Sound = {
-      id: Date.now(),
-      name: file.name.replace(/\.[^/.]+$/, '').slice(0, 12).toUpperCase() + '!',
-      url,
-      color,
-      glow: color,
-    };
-    setSounds((prev) => [...prev, newSound]);
-    setSoundSettings((prev) => ({
-      ...prev,
-      [newSound.id]: { pitch: 0, speed: 1, reverb: 0, delay: 0, loop: false, volume: 100 },
-    }));
-  }, []);
+  const handleUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const neonColors = [
+        "#ff00ff",
+        "#00ffff",
+        "#ffff00",
+        "#39ff14",
+        "#ff6600",
+        "#0088ff",
+        "#bf00ff",
+        "#ff1493",
+      ];
+      const color = neonColors[Math.floor(Math.random() * neonColors.length)];
+      const newSound: Sound = {
+        id: Date.now(),
+        name:
+          file.name
+            .replace(/\.[^/.]+$/, "")
+            .slice(0, 12)
+            .toUpperCase() + "!",
+        url,
+        color,
+        glow: color,
+      };
+      setSounds(prev => [...prev, newSound]);
+      setSoundSettings(prev => ({
+        ...prev,
+        [newSound.id]: {
+          pitch: 0,
+          speed: 1,
+          reverb: 0,
+          delay: 0,
+          loop: false,
+          volume: 100,
+        },
+      }));
+    },
+    []
+  );
 
   /* Update sound setting */
   const updateSoundSetting = useCallback(
     (soundId: string | number, key: string, value: number | boolean): void => {
-      setSoundSettings((prev) => ({
+      setSoundSettings(prev => ({
         ...prev,
         [soundId]: { ...prev[soundId], [key]: value },
       }));
@@ -217,14 +231,14 @@ export default function Home() {
       const fx = fxChainsRef.current[soundId];
       const player = playersRef.current[soundId];
       if (fx) {
-        if (key === 'pitch') fx.pitchShift.pitch = value;
-        if (key === 'reverb') fx.reverb.wet.value = value;
-        if (key === 'delay') fx.delay.wet.value = value;
-        if (key === 'volume') fx.gain.gain.value = (value as number) / 100;
+        if (key === "pitch") fx.pitchShift.pitch = value;
+        if (key === "reverb") fx.reverb.wet.value = value;
+        if (key === "delay") fx.delay.wet.value = value;
+        if (key === "volume") fx.gain.gain.value = (value as number) / 100;
       }
       if (player) {
-        if (key === 'speed') player.playbackRate = value as number;
-        if (key === 'loop') player.loop = value as boolean;
+        if (key === "speed") player.playbackRate = value as number;
+        if (key === "loop") player.loop = value as boolean;
       }
     },
     []
@@ -255,9 +269,9 @@ export default function Home() {
       if (recorderRef.current) {
         const recording = await recorderRef.current.stop();
         const url = URL.createObjectURL(recording);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'onomatopeia-mix.webm';
+        a.download = "onomatopeia-mix.webm";
         a.click();
         recorderRef.current.dispose();
         recorderRef.current = null;
@@ -272,8 +286,8 @@ export default function Home() {
   }, [isRecording, isAudioStarted]);
 
   /* Load sound into deck */
-  const loadToDeck = useCallback((sound: Sound, deck: 'A' | 'B'): void => {
-    if (deck === 'A') setDeckA(sound);
+  const loadToDeck = useCallback((sound: Sound, deck: "A" | "B"): void => {
+    if (deck === "A") setDeckA(sound);
     else setDeckB(sound);
   }, []);
 
@@ -281,13 +295,31 @@ export default function Home() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent): void => {
       const keyMap: Record<string, number> = {
-        '1': 0, '2': 1, '3': 2, '4': 3,
-        '5': 4, '6': 5, '7': 6, '8': 7,
-        '9': 8,
-        'q': 0, 'w': 1, 'e': 2, 'r': 3,
-        't': 4, 'y': 5, 'u': 6, 'i': 7,
-        'o': 8, 'p': 9, 'a': 10, 's': 11,
-        'd': 12, 'f': 13, 'g': 14, 'h': 15,
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6,
+        "8": 7,
+        "9": 8,
+        q: 0,
+        w: 1,
+        e: 2,
+        r: 3,
+        t: 4,
+        y: 5,
+        u: 6,
+        i: 7,
+        o: 8,
+        p: 9,
+        a: 10,
+        s: 11,
+        d: 12,
+        f: 13,
+        g: 14,
+        h: 15,
       };
 
       const key = e.key.toLowerCase();
@@ -299,8 +331,8 @@ export default function Home() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [sounds, playSound]);
 
   return (
@@ -333,20 +365,22 @@ export default function Home() {
         />
       </section>
 
+      <AutoBeatMaker sounds={minecraftSounds} />
+
       {/* ===== PAD GRID ===== */}
       <section className="w-full max-w-5xl mb-8">
         <h2
           className="text-xl sm:text-2xl font-bold text-center mb-4"
           style={{
             fontFamily: "'Bungee', Impact, sans-serif",
-            color: '#ff00ff',
-            textShadow: '0 0 12px #ff00ff',
+            color: "#ff00ff",
+            textShadow: "0 0 12px #ff00ff",
           }}
         >
           ★ LAUNCHPAD ★
         </h2>
         <div className="grid grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-          {sounds.map((sound) => (
+          {sounds.map(sound => (
             <Pad
               key={sound.id}
               id={sound.id}
@@ -360,8 +394,8 @@ export default function Home() {
               }
               isSelected={selectedSound?.id === sound.id}
               volume={soundSettings[sound.id]?.volume || 100}
-              onLoadDeckA={() => loadToDeck(sound, 'A')}
-              onLoadDeckB={() => loadToDeck(sound, 'B')}
+              onLoadDeckA={() => loadToDeck(sound, "A")}
+              onLoadDeckB={() => loadToDeck(sound, "B")}
             />
           ))}
         </div>
@@ -374,7 +408,9 @@ export default function Home() {
             soundName={selectedSound.name}
             soundColor={selectedSound.color}
             settings={soundSettings[selectedSound.id]}
-            onUpdate={(key, value) => updateSoundSetting(selectedSound.id, key, value)}
+            onUpdate={(key, value) =>
+              updateSoundSetting(selectedSound.id, key, value)
+            }
             onClose={() => setSelectedSound(null)}
           />
         </section>
@@ -396,11 +432,11 @@ export default function Home() {
       {/* ===== FOOTER ===== */}
       <footer className="w-full max-w-5xl text-center mt-auto pt-8 pb-6 border-t border-fuchsia-900/40">
         <p className="text-xs sm:text-sm text-fuchsia-300/50 leading-relaxed font-mono">
-          Feito pra apresentação de onomatopeia –{' '}
-          <span className="text-cyan-400/70">The dog barked loudly.</span> {' '}
-          <span className="text-red-400/70">Crash!</span> {' '}
-          <span className="text-cyan-300/70">Splash!</span> {' '}
-          <span className="text-yellow-400/70">Boom!</span> {' '}
+          Feito pra apresentação de onomatopeia –{" "}
+          <span className="text-cyan-400/70">The dog barked loudly.</span>{" "}
+          <span className="text-red-400/70">Crash!</span>{" "}
+          <span className="text-cyan-300/70">Splash!</span>{" "}
+          <span className="text-yellow-400/70">Boom!</span>{" "}
           <span className="text-green-400/70">Crunch, crunch, crunch...</span>
         </p>
         <p className="mt-2 text-xs text-fuchsia-400/30 tracking-widest">
